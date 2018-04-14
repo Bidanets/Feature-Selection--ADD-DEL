@@ -8,27 +8,26 @@ import optunity.metrics
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPRegressor as mlpr
 import copy
+
+def draw_plot(Q_min, n):
+    index_of_the_best = Q_min.index(min(Q_min))
+        
+    plt.plot(np.arange(1, len(Q_min)+1), Q_min, 'ro-', color = 'green', label = 'min Q')
     
-data = datasets.load_diabetes()
-X = data.data
-y = data.target
+    plt.plot([index_of_the_best+1], Q_min[index_of_the_best], 'ro', 
+             markersize = 8.0,
+             color = 'blue', label = 'best Q')
+    
+    plt.xlabel('Number of features')
+    plt.ylabel('Q')
+    
 
-n = X.shape[1]
-
-d = 3
-
-features = set(np.arange(0, 10))
-
-size_of_train_data = int(len(X) * 0.8)
-size_of_test_data = len(X) - size_of_train_data
-
-X_train = X[:size_of_train_data]
-y_train = y[:size_of_train_data]
-
-X_test = X[size_of_train_data:]
-y_test = y[size_of_train_data:]
 
 def Full_Search(X_train, y_train, X_test, y_test):
+    n = len(X_train[0])
+    d = 3
+    features = set(np.arange(0, n))
+    
     Q_min = []
     
     Q_best = 1E9
@@ -58,8 +57,9 @@ def Full_Search(X_train, y_train, X_test, y_test):
                     best_subset = copy.deepcopy(subset)
                     number_of_features_in_best_subset = copy.deepcopy(cur_number_of_features)
                 else:
-                    best_subset = subset
-                    return best_subset
+                    best_subset = copy.deepcopy(subset)
+                    draw_plot(Q_min, n)    
+                    return best_subset, Q_best, plt
             
             Q_j.append(cur_Q)
         
@@ -68,20 +68,7 @@ def Full_Search(X_train, y_train, X_test, y_test):
             
         Q_min.append(min(Q_j))
         
+    draw_plot(Q_min, n)    
         
-    index_of_the_best = Q_min.index(min(Q_min))
-        
-    plt.plot(np.arange(1, 11), Q_min, 'ro-', color = 'green', label = 'min Q')
-    
-    plt.plot([index_of_the_best+1], Q_min[index_of_the_best], 'ro', 
-             markersize = 15.0,
-             color = 'blue', label = 'best Q')
-    
-    plt.xlabel('Number of features')
-    plt.ylabel('Q')
-    plt.title('Fature Selection: FullSearch (Diabetes)')   
-    
-    plt.rcParams["figure.figsize"] = (12, 4)
-    
-    return best_subset, min(Q_min), plt
+    return best_subset, Q_best, plt
 
